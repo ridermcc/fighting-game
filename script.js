@@ -56,9 +56,9 @@ class Player {
         this.velocityY += 0.8;
         this.y += this.velocityY;
 
-        // Ground collision
+        // Ground collision - align feet to ground level
         if (this.y + this.height > canvas.height - 200) {
-            this.y = canvas.height - 200 - this.height;
+            this.y = canvas.height - 200 - this.height + 10; // +10 to align feet to ground
             this.velocityY = 0;
             this.onGround = true;
         }
@@ -119,50 +119,129 @@ class Player {
         ctx.moveTo(this.x + this.width/2, this.y + 20);
         ctx.lineTo(this.x + this.width/2, this.y + 50);
 
-        // Arms - with punch animation
+        // Arms - with realistic punch animation
         if (this.attacking && this.attackType === 'punch') {
-            // Animated punch - extends and retracts
-            const punchExtension = Math.sin(this.attackFrame * 0.5) * 15 + 15;
-            ctx.moveTo(this.x + this.width/2 - 15, this.y + 30);
+            // Realistic punch animation with shoulder movement
+            const punchProgress = this.attackFrame / 30; // 0 to 1
+            const punchExtension = Math.sin(punchProgress * Math.PI) * 25; // Smooth arc
+            const shoulderShift = Math.sin(punchProgress * Math.PI) * 5; // Body rotation effect
+            
             if (this.facing === 'right') {
-                ctx.lineTo(this.x + this.width/2 + punchExtension, this.y + 30);
+                // Punching arm (right)
+                const shoulderX = this.x + this.width/2 + shoulderShift;
+                const shoulderY = this.y + 30;
+                const elbowX = shoulderX + 12 + punchExtension * 0.6;
+                const elbowY = shoulderY + 5;
+                const fistX = shoulderX + 20 + punchExtension;
+                const fistY = shoulderY;
+                
+                // Upper arm
+                ctx.moveTo(shoulderX, shoulderY);
+                ctx.lineTo(elbowX, elbowY);
+                // Forearm
+                ctx.moveTo(elbowX, elbowY);
+                ctx.lineTo(fistX, fistY);
+                
+                // Non-punching arm (left) - defensive position
+                ctx.moveTo(this.x + this.width/2 - shoulderShift, this.y + 30);
+                ctx.lineTo(this.x + this.width/2 - 12, this.y + 25);
+                ctx.moveTo(this.x + this.width/2 - 12, this.y + 25);
+                ctx.lineTo(this.x + this.width/2 - 8, this.y + 35);
             } else {
-                ctx.lineTo(this.x + this.width/2 - punchExtension, this.y + 30);
-            }
-            // Other arm stays back
-            ctx.moveTo(this.x + this.width/2, this.y + 30);
-            if (this.facing === 'right') {
-                ctx.lineTo(this.x + this.width/2 - 10, this.y + 35);
-            } else {
-                ctx.lineTo(this.x + this.width/2 + 10, this.y + 35);
+                // Punching arm (left)
+                const shoulderX = this.x + this.width/2 - shoulderShift;
+                const shoulderY = this.y + 30;
+                const elbowX = shoulderX - 12 - punchExtension * 0.6;
+                const elbowY = shoulderY + 5;
+                const fistX = shoulderX - 20 - punchExtension;
+                const fistY = shoulderY;
+                
+                // Upper arm
+                ctx.moveTo(shoulderX, shoulderY);
+                ctx.lineTo(elbowX, elbowY);
+                // Forearm
+                ctx.moveTo(elbowX, elbowY);
+                ctx.lineTo(fistX, fistY);
+                
+                // Non-punching arm (right) - defensive position
+                ctx.moveTo(this.x + this.width/2 + shoulderShift, this.y + 30);
+                ctx.lineTo(this.x + this.width/2 + 12, this.y + 25);
+                ctx.moveTo(this.x + this.width/2 + 12, this.y + 25);
+                ctx.lineTo(this.x + this.width/2 + 8, this.y + 35);
             }
         } else {
-            // Normal arm position
-            ctx.moveTo(this.x + this.width/2 - 15, this.y + 30);
-            ctx.lineTo(this.x + this.width/2 + 15, this.y + 30);
+            // Normal arm position - relaxed at sides
+            ctx.moveTo(this.x + this.width/2, this.y + 30);
+            ctx.lineTo(this.x + this.width/2 - 12, this.y + 40);
+            ctx.moveTo(this.x + this.width/2 - 12, this.y + 40);
+            ctx.lineTo(this.x + this.width/2 - 8, this.y + 50);
+            
+            ctx.moveTo(this.x + this.width/2, this.y + 30);
+            ctx.lineTo(this.x + this.width/2 + 12, this.y + 40);
+            ctx.moveTo(this.x + this.width/2 + 12, this.y + 40);
+            ctx.lineTo(this.x + this.width/2 + 8, this.y + 50);
         }
 
-        // Legs - with kick animation
+        // Legs - with realistic kick animation
         if (this.attacking && this.attackType === 'kick') {
-            // Animated kick
-            const kickExtension = Math.sin(this.attackFrame * 0.4) * 20 + 10;
-            ctx.moveTo(this.x + this.width/2, this.y + 50);
+            // Realistic kick animation with knee lift and extension
+            const kickProgress = this.attackFrame / 30; // 0 to 1
+            const kneeHeight = Math.sin(kickProgress * Math.PI) * 20; // Knee lift
+            const kickExtension = Math.sin(kickProgress * Math.PI * 2) * 15; // Foot extension
+            
             if (this.facing === 'right') {
-                ctx.lineTo(this.x + this.width/2 + kickExtension, this.y + 65);
-                // Other leg stays normal
+                // Kicking leg (right)
+                const hipX = this.x + this.width/2;
+                const hipY = this.y + 50;
+                const kneeX = hipX + 8 + kickExtension * 0.3;
+                const kneeY = hipY + 15 - kneeHeight;
+                const footX = hipX + 15 + kickExtension;
+                const footY = hipY + 10 - kneeHeight * 0.5;
+                
+                // Thigh
+                ctx.moveTo(hipX, hipY);
+                ctx.lineTo(kneeX, kneeY);
+                // Shin
+                ctx.moveTo(kneeX, kneeY);
+                ctx.lineTo(footX, footY);
+                
+                // Supporting leg (left) - slightly bent for balance
                 ctx.moveTo(this.x + this.width/2, this.y + 50);
-                ctx.lineTo(this.x + this.width/2 - 10, this.y + 70);
+                ctx.lineTo(this.x + this.width/2 - 8, this.y + 65);
+                ctx.moveTo(this.x + this.width/2 - 8, this.y + 65);
+                ctx.lineTo(this.x + this.width/2 - 5, this.y + 70);
             } else {
-                ctx.lineTo(this.x + this.width/2 - kickExtension, this.y + 65);
-                // Other leg stays normal
+                // Kicking leg (left)
+                const hipX = this.x + this.width/2;
+                const hipY = this.y + 50;
+                const kneeX = hipX - 8 - kickExtension * 0.3;
+                const kneeY = hipY + 15 - kneeHeight;
+                const footX = hipX - 15 - kickExtension;
+                const footY = hipY + 10 - kneeHeight * 0.5;
+                
+                // Thigh
+                ctx.moveTo(hipX, hipY);
+                ctx.lineTo(kneeX, kneeY);
+                // Shin
+                ctx.moveTo(kneeX, kneeY);
+                ctx.lineTo(footX, footY);
+                
+                // Supporting leg (right) - slightly bent for balance
                 ctx.moveTo(this.x + this.width/2, this.y + 50);
-                ctx.lineTo(this.x + this.width/2 + 10, this.y + 70);
+                ctx.lineTo(this.x + this.width/2 + 8, this.y + 65);
+                ctx.moveTo(this.x + this.width/2 + 8, this.y + 65);
+                ctx.lineTo(this.x + this.width/2 + 5, this.y + 70);
             }
         } else {
-            // Normal leg position
+            // Normal leg position - standing straight
             ctx.moveTo(this.x + this.width/2, this.y + 50);
+            ctx.lineTo(this.x + this.width/2 - 8, this.y + 65);
+            ctx.moveTo(this.x + this.width/2 - 8, this.y + 65);
             ctx.lineTo(this.x + this.width/2 - 10, this.y + 70);
+            
             ctx.moveTo(this.x + this.width/2, this.y + 50);
+            ctx.lineTo(this.x + this.width/2 + 8, this.y + 65);
+            ctx.moveTo(this.x + this.width/2 + 8, this.y + 65);
             ctx.lineTo(this.x + this.width/2 + 10, this.y + 70);
         }
 
@@ -177,18 +256,21 @@ class Player {
             const effectSize = Math.sin(this.attackFrame * 0.3) * 5 + 8;
             
             if (this.attackType === 'punch') {
-                const punchExtension = Math.sin(this.attackFrame * 0.5) * 15 + 15;
+                const punchProgress = this.attackFrame / 30;
+                const punchExtension = Math.sin(punchProgress * Math.PI) * 25;
                 if (this.facing === 'right') {
-                    ctx.arc(this.x + this.width/2 + punchExtension, this.y + 30, effectSize, 0, Math.PI * 2);
+                    ctx.arc(this.x + this.width/2 + 20 + punchExtension, this.y + 30, effectSize, 0, Math.PI * 2);
                 } else {
-                    ctx.arc(this.x + this.width/2 - punchExtension, this.y + 30, effectSize, 0, Math.PI * 2);
+                    ctx.arc(this.x + this.width/2 - 20 - punchExtension, this.y + 30, effectSize, 0, Math.PI * 2);
                 }
             } else if (this.attackType === 'kick') {
-                const kickExtension = Math.sin(this.attackFrame * 0.4) * 20 + 10;
+                const kickProgress = this.attackFrame / 30;
+                const kickExtension = Math.sin(kickProgress * Math.PI * 2) * 15;
+                const kneeHeight = Math.sin(kickProgress * Math.PI) * 20;
                 if (this.facing === 'right') {
-                    ctx.arc(this.x + this.width/2 + kickExtension, this.y + 65, effectSize, 0, Math.PI * 2);
+                    ctx.arc(this.x + this.width/2 + 15 + kickExtension, this.y + 60 - kneeHeight * 0.5, effectSize, 0, Math.PI * 2);
                 } else {
-                    ctx.arc(this.x + this.width/2 - kickExtension, this.y + 65, effectSize, 0, Math.PI * 2);
+                    ctx.arc(this.x + this.width/2 - 15 - kickExtension, this.y + 60 - kneeHeight * 0.5, effectSize, 0, Math.PI * 2);
                 }
             }
             ctx.stroke();
