@@ -1,0 +1,87 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #000;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+}
+
+#game-canvas {
+    display: block;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 24px;
+    z-index: 10;
+}
+
+.player-info {
+    display: inline-block;
+    margin: 0 50px;
+}
+
+#player1-info {
+    color: #fff;
+}
+
+#player2-info {
+    color: #fff;
+}
+
+.health-bar {
+    width: 200px;
+    height: 20px;
+    background-color: #333;
+    margin: 5px auto;
+    border: 1px solid #fff;
+}
+
+.health-fill {
+    height: 100%;
+    background-color: #fff;
+}
+
+#controls {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 16px;
+    color: #aaa;
+}
+
+#game-over {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    color: #fff;
+    text-align: center;
+    display: none;
+    z-index: 20;
+}
+
+#restart-btn {
+    background-color: #fff;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    font-size: 20px;
+    cursor: pointer;
+    margin-top: 20px;
+}
