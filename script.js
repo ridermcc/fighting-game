@@ -33,6 +33,7 @@ class Player {
         this.attacking = false;
         this.attackType = '';
         this.attackCooldown = 0;
+        this.attackFrame = 0;
         this.hitCooldown = 0;
     }
 
@@ -56,8 +57,8 @@ class Player {
         this.y += this.velocityY;
 
         // Ground collision
-        if (this.y + this.height > canvas.height - 50) {
-            this.y = canvas.height - 50 - this.height;
+        if (this.y + this.height > canvas.height - 200) {
+            this.y = canvas.height - 200 - this.height;
             this.velocityY = 0;
             this.onGround = true;
         }
@@ -69,8 +70,12 @@ class Player {
         // Handle attacks
         if (this.attackCooldown > 0) {
             this.attackCooldown--;
+            if (this.attacking) {
+                this.attackFrame++;
+            }
         } else {
             this.attacking = false;
+            this.attackFrame = 0;
         }
 
         if (this.hitCooldown > 0) {
@@ -90,6 +95,7 @@ class Player {
         this.attacking = true;
         this.attackType = type;
         this.attackCooldown = 30; // Cooldown frames
+        this.attackFrame = 0;
     }
 
     takeHit(damage) {
@@ -113,43 +119,81 @@ class Player {
         ctx.moveTo(this.x + this.width/2, this.y + 20);
         ctx.lineTo(this.x + this.width/2, this.y + 50);
 
-        // Arms
-        ctx.moveTo(this.x + this.width/2 - 15, this.y + 30);
+        // Arms - with punch animation
         if (this.attacking && this.attackType === 'punch') {
+            // Animated punch - extends and retracts
+            const punchExtension = Math.sin(this.attackFrame * 0.5) * 15 + 15;
+            ctx.moveTo(this.x + this.width/2 - 15, this.y + 30);
             if (this.facing === 'right') {
-                ctx.lineTo(this.x + this.width/2 + 25, this.y + 30);
+                ctx.lineTo(this.x + this.width/2 + punchExtension, this.y + 30);
             } else {
-                ctx.lineTo(this.x + this.width/2 - 25, this.y + 30);
+                ctx.lineTo(this.x + this.width/2 - punchExtension, this.y + 30);
+            }
+            // Other arm stays back
+            ctx.moveTo(this.x + this.width/2, this.y + 30);
+            if (this.facing === 'right') {
+                ctx.lineTo(this.x + this.width/2 - 10, this.y + 35);
+            } else {
+                ctx.lineTo(this.x + this.width/2 + 10, this.y + 35);
             }
         } else {
+            // Normal arm position
+            ctx.moveTo(this.x + this.width/2 - 15, this.y + 30);
             ctx.lineTo(this.x + this.width/2 + 15, this.y + 30);
         }
 
-        // Legs
-        ctx.moveTo(this.x + this.width/2, this.y + 50);
-        ctx.lineTo(this.x + this.width/2 - 10, this.y + 70);
-        ctx.moveTo(this.x + this.width/2, this.y + 50);
-        ctx.lineTo(this.x + this.width/2 + 10, this.y + 70);
+        // Legs - with kick animation
+        if (this.attacking && this.attackType === 'kick') {
+            // Animated kick
+            const kickExtension = Math.sin(this.attackFrame * 0.4) * 20 + 10;
+            ctx.moveTo(this.x + this.width/2, this.y + 50);
+            if (this.facing === 'right') {
+                ctx.lineTo(this.x + this.width/2 + kickExtension, this.y + 65);
+                // Other leg stays normal
+                ctx.moveTo(this.x + this.width/2, this.y + 50);
+                ctx.lineTo(this.x + this.width/2 - 10, this.y + 70);
+            } else {
+                ctx.lineTo(this.x + this.width/2 - kickExtension, this.y + 65);
+                // Other leg stays normal
+                ctx.moveTo(this.x + this.width/2, this.y + 50);
+                ctx.lineTo(this.x + this.width/2 + 10, this.y + 70);
+            }
+        } else {
+            // Normal leg position
+            ctx.moveTo(this.x + this.width/2, this.y + 50);
+            ctx.lineTo(this.x + this.width/2 - 10, this.y + 70);
+            ctx.moveTo(this.x + this.width/2, this.y + 50);
+            ctx.lineTo(this.x + this.width/2 + 10, this.y + 70);
+        }
 
         ctx.stroke();
 
-        // Draw attack effect
+        // Draw attack effect with animation
         if (this.attacking) {
+            ctx.strokeStyle = '#ff0';
+            ctx.lineWidth = 3;
             ctx.beginPath();
+            
+            const effectSize = Math.sin(this.attackFrame * 0.3) * 5 + 8;
+            
             if (this.attackType === 'punch') {
+                const punchExtension = Math.sin(this.attackFrame * 0.5) * 15 + 15;
                 if (this.facing === 'right') {
-                    ctx.arc(this.x + this.width/2 + 25, this.y + 30, 5, 0, Math.PI * 2);
+                    ctx.arc(this.x + this.width/2 + punchExtension, this.y + 30, effectSize, 0, Math.PI * 2);
                 } else {
-                    ctx.arc(this.x + this.width/2 - 25, this.y + 30, 5, 0, Math.PI * 2);
+                    ctx.arc(this.x + this.width/2 - punchExtension, this.y + 30, effectSize, 0, Math.PI * 2);
                 }
             } else if (this.attackType === 'kick') {
+                const kickExtension = Math.sin(this.attackFrame * 0.4) * 20 + 10;
                 if (this.facing === 'right') {
-                    ctx.arc(this.x + this.width/2 + 20, this.y + 60, 5, 0, Math.PI * 2);
+                    ctx.arc(this.x + this.width/2 + kickExtension, this.y + 65, effectSize, 0, Math.PI * 2);
                 } else {
-                    ctx.arc(this.x + this.width/2 - 20, this.y + 60, 5, 0, Math.PI * 2);
+                    ctx.arc(this.x + this.width/2 - kickExtension, this.y + 65, effectSize, 0, Math.PI * 2);
                 }
             }
             ctx.stroke();
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 2;
         }
 
         // Draw hit effect
@@ -164,7 +208,7 @@ class Player {
 // Create players
 const player1 = new Player(
     100, 
-    canvas.height - 110, 
+    canvas.height - 260, 
     '#fff', 
     {
         left: 'a',
@@ -177,7 +221,7 @@ const player1 = new Player(
 
 const player2 = new Player(
     canvas.width - 130, 
-    canvas.height - 110, 
+    canvas.height - 260, 
     '#fff', 
     {
         left: 'ArrowLeft',
@@ -247,8 +291,8 @@ function drawGround() {
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(0, canvas.height - 50);
-    ctx.lineTo(canvas.width, canvas.height - 50);
+    ctx.moveTo(0, canvas.height - 200);
+    ctx.lineTo(canvas.width, canvas.height - 200);
     ctx.stroke();
 }
 
@@ -298,9 +342,9 @@ restartBtn.addEventListener('click', () => {
     player1.health = 100;
     player2.health = 100;
     player1.x = 100;
-    player1.y = canvas.height - 110;
+    player1.y = canvas.height - 260;
     player2.x = canvas.width - 130;
-    player2.y = canvas.height - 110;
+    player2.y = canvas.height - 260;
     player1.velocityY = 0;
     player2.velocityY = 0;
     player1.onGround = true;
